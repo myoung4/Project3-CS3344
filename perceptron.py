@@ -82,7 +82,10 @@ class PerceptronClassifier:
         """
         featuresWeights = []
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        pixelsWithLabel = self.weights[label] # key:value list for given label
+        pixelLabelList = pixelsWithLabel.items() # converts key:value to a list
+        sortedFeatures = sorted(pixelLabelList, None, key=lambda x: x[1])
+        length = len(sortedFeatures)
+        for i in range(100):
+            featuresWeights.append(sortedFeatures[length - i - 1])
         return featuresWeights
