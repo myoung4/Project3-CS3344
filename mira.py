@@ -60,8 +60,40 @@ class MiraClassifier:
         datum is a counter from features to values for those features
         representing a vector of values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        bAccuracy = None
+        bWeight = {}
+        for c in Cgrid:
+            weight = self.weights.copy()
+            for i in range (self.max_iterations):
+                for count, data in enumerate(trainingData):
+                    sampleScore = None
+                    aScore = None
+                    for legLabel in self.legalLabels:
+                        aScore = data * weight[legLabel]
+                        if aScore > sampleScore or sampleScore is None:
+                            sampleScore = aScore
+                            aScore = legLabel
+
+                    tLableCount = trainingLabels[count]
+                    if aScore != tLableCount:
+                       f = data.copy()
+                       tau = min(c, ((weight[aScore] - weight[tLableCount]) * f + 1.0) / (2.0 * (f * f)))
+                       f.divideAll(1.0 / tau)
+                            
+                       weight[tLableCount] = weight[tLableCount] + f
+                       weight[aScore] = weight[aScore] - f
+
+            validGuess = 0
+            guess = self.classify(validationData)
+            for count, j in enumerate(guess):
+                validGuess += (validationLabels[count] == j and 1.0 or 0.0)
+            accuracy = validGuess / len(guess)
+
+            if accuracy > bAccuracy or bAccuracy is None:
+                bAccuracy = accuracy
+                bWeight = weight
+
+        self.weights = bWeight
 
     def classify(self, data ):
         """
