@@ -60,40 +60,44 @@ class MiraClassifier:
         datum is a counter from features to values for those features
         representing a vector of values.
         """
-        bAccuracy = None
-        bWeight = {}
-        for c in Cgrid:
-            weight = self.weights.copy()
-            for i in range (self.max_iterations):
-                for count, data in enumerate(trainingData):
-                    sampleScore = None
-                    aScore = None
-                    for legLabel in self.legalLabels:
-                        aScore = data * weight[legLabel]
-                        if aScore > sampleScore or sampleScore is None:
-                            sampleScore = aScore
-                            aScore = legLabel
 
-                    tLableCount = trainingLabels[count]
-                    if aScore != tLableCount:
-                       f = data.copy()
-                       tau = min(c, ((weight[aScore] - weight[tLableCount]) * f + 1.0) / (2.0 * (f * f)))
-                       f.divideAll(1.0 / tau)
-                            
-                       weight[tLableCount] = weight[tLableCount] + f
-                       weight[aScore] = weight[aScore] - f
+        mostAccurateVal = -99
+        accurateWeights = {}
+        for c in Cgrid: # for every c we have
+            learnedCWeights = self.weights.copy()
+            for i in range (self.max_iterations): # pass through the data self.max.iteration times during training
+                for j in range(len(trainingData)):
+                    highestValue = -99
+                    bestGuess = None
+                    data = trainingData[j]
 
-            validGuess = 0
-            guess = self.classify(validationData)
-            for count, j in enumerate(guess):
-                validGuess += (validationLabels[count] == j and 1.0 or 0.0)
-            accuracy = validGuess / len(guess)
+                    for legLabel in self.legalLabels: # make a guess
+                        predImage = data * learnedCWeights[legLabel]
+                        if predImage > highestValue:
+                            highestValue = predImage
+                            bestGuess = legLabel
+                    realLabel = trainingLabels[j]
 
-            if accuracy > bAccuracy or bAccuracy is None:
-                bAccuracy = accuracy
-                bWeight = weight
+                    if realLabel != bestGuess: # if guess is wrong
+                        dataCopy = data.copy()
+                        tau = min(c, (((learnedCWeights[bestGuess] - learnedCWeights[realLabel]) * dataCopy + 1.0) / (2.0 * (dataCopy * dataCopy))))
+                        dataCopy.update((x, y * tau) for x, y in data.items())
+                        learnedCWeights[bestGuess] = learnedCWeights[bestGuess] - dataCopy
+                        learnedCWeights[realLabel] = learnedCWeights[realLabel] + dataCopy
 
-        self.weights = bWeight
+            correct = 0 # find out how accurate our c was
+            classifications = self.classify(validationData) # guess based on the data
+            for l in range(len(classifications)):
+                correct = correct + (validationData[l] == classifications[l] and 1.0 or 0.0)
+            accuracyVal = correct / len(classifications)
+
+            if accuracyVal > mostAccurateVal:
+                mostAccurateVal = accuracyVal
+                accurateWeights = learnedCWeights
+
+        self.weights = accurateWeights # store the weights learned using the best value of C at the end in self.weights
+
+
 
     def classify(self, data ):
         """
