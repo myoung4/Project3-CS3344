@@ -78,29 +78,53 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
+    numLoop = False
+
+    def run_dfs(x, y):
+        if x < 0 or x >= DIGIT_DATUM_WIDTH:
+            return False
+        if y < 0 or y >= DIGIT_DATUM_HEIGHT:
+            return False
+        if datum.getPixel(x, y) == 2 or datum.getPixel(x, y) == 1:
+            return True
+
+        if (x, y) in visited.keys():
+            return True
+
+        visited[(x, y)] = True
+        return run_dfs(x - 1, y) and run_dfs(x + 1, y) and run_dfs(x, y - 1) and run_dfs(x, y + 1)
+
+    for x in range(DIGIT_DATUM_WIDTH):
+        for y in range(DIGIT_DATUM_HEIGHT):
+            visited = {}
+            if datum.getPixel(x, y) == 0:
+                if run_dfs(x, y) == True:
+                    numLoop = True
+                    break
+
+    features ["has_loop"] = numLoop
     return features
 
 
 
-def basicFeatureExtractorPacman(state):
+def basicfeatureextractorpacman(state):
     """
-    A basic feature extraction function.
+    a basic feature extraction function.
 
-    You should return a util.Counter() of features
+    you should return a util.counter() of features
     for each (state, action) pair along with a list of the legal actions
 
     ##
     """
-    features = util.Counter()
-    for action in state.getLegalActions():
-        successor = state.generateSuccessor(0, action)
-        foodCount = successor.getFood().count()
-        featureCounter = util.Counter()
-        featureCounter['foodCount'] = foodCount
-        features[action] = featureCounter
-    return features, state.getLegalActions()
+    features = util.counter()
+    for action in state.getlegalactions():
+        successor = state.generatesuccessor(0, action)
+        foodcount = successor.getfood().count()
+        featurecounter = util.counter()
+        featurecounter['foodcount'] = foodcount
+        features[action] = featurecounter
+    return features, state.getlegalactions()
 
 def enhancedFeatureExtractorPacman(state):
     """
