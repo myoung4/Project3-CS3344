@@ -23,7 +23,7 @@ import mira
 import samples
 import sys
 import util
-from pacman import GameState
+from pacman import GameState, Directions
 
 TEST_SET_SIZE = 100
 DIGIT_DATUM_WIDTH=28
@@ -78,29 +78,53 @@ def enhancedFeatureExtractorDigit(datum):
     features =  basicFeatureExtractorDigit(datum)
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
+    numLoop = False
+
+    def run_dfs(x, y):
+        if x < 0 or x >= DIGIT_DATUM_WIDTH:
+            return False
+        if y < 0 or y >= DIGIT_DATUM_HEIGHT:
+            return False
+        if datum.getPixel(x, y) == 2 or datum.getPixel(x, y) == 1:
+            return True
+
+        if (x, y) in visited.keys():
+            return True
+
+        visited[(x, y)] = True
+        return run_dfs(x - 1, y) and run_dfs(x + 1, y) and run_dfs(x, y - 1) and run_dfs(x, y + 1)
+
+    for x in range(DIGIT_DATUM_WIDTH):
+        for y in range(DIGIT_DATUM_HEIGHT):
+            visited = {}
+            if datum.getPixel(x, y) == 0:
+                if run_dfs(x, y) == True:
+                    numLoop = True
+                    break
+
+    features ["has_loop"] = numLoop
     return features
 
 
 
-def basicFeatureExtractorPacman(state):
+def basicfeatureextractorpacman(state):
     """
-    A basic feature extraction function.
+    a basic feature extraction function.
 
-    You should return a util.Counter() of features
+    you should return a util.counter() of features
     for each (state, action) pair along with a list of the legal actions
 
     ##
     """
-    features = util.Counter()
-    for action in state.getLegalActions():
-        successor = state.generateSuccessor(0, action)
-        foodCount = successor.getFood().count()
-        featureCounter = util.Counter()
-        featureCounter['foodCount'] = foodCount
-        features[action] = featureCounter
-    return features, state.getLegalActions()
+    features = util.counter()
+    for action in state.getlegalactions():
+        successor = state.generatesuccessor(0, action)
+        foodcount = successor.getfood().count()
+        featurecounter = util.counter()
+        featurecounter['foodcount'] = foodcount
+        features[action] = featurecounter
+    return features, state.getlegalactions()
 
 def enhancedFeatureExtractorPacman(state):
     """
@@ -123,8 +147,33 @@ def enhancedPacmanFeatures(state, action):
     It should return a counter with { <feature name> : <feature value>, ... }
     """
     features = util.Counter()
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    features["STOP"] = int(action == Directions.STOP) * 100
+    successor = state.generateSuccessor(0, action)
+    pac_pos = successor.getPacmanPosition()
+    ghosts = successor.getGhostPositions()
+    capsules = successor.getCapsules()
+    state_food = state.getFood()
+    food = [(x, y) for x, row in enumerate(state_food) for y, food in enumerate(row) if food]
+
+    nearest_ghosts = sorted([util.manhattanDistance(pac_pos, i) for i in ghosts])
+    features["nearest_ghost"] = nearest_ghosts[0] #* 1.0
+    for i in xrange(min(len(nearest_ghosts), 1)):
+        features[("ghost", i)] = 6 / (0.1 + nearest_ghosts[i])
+
+    nearest_caps = sorted([util.manhattanDistance(pac_pos, i) for i in capsules])
+    for i in xrange(min(len(nearest_caps), 1)):
+        features[("capsule", i)] = 15 / (1 + nearest_caps[i])
+
+    nearest_food = sorted([util.manhattanDistance(pac_pos, i) for i in food])
+    for i, weight in zip(xrange(min(len(nearest_food), 5)), [1.3, 0.8] + [0.9] * 3):
+        features[("food", i)] = weight * nearest_food[i]
+
+    features["capsule count"] = len(capsules) * 10
+    features["win"] = state.isWin()
+    features["lose"] = state.isLose()
+    features["score"] = state.getScore() * 10
+
     return features
 
 
