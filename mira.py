@@ -61,8 +61,8 @@ class MiraClassifier:
         representing a vector of values.
         """
 
-        mostAccurateVal = -99
-        accurateWeights = {}
+        # mostAccurateVal = -99
+        # accurateWeights = {}
         for c in Cgrid: # for every c we have
             learnedCWeights = self.weights.copy()
             for i in range (self.max_iterations): # pass through the data self.max.iteration times during training
@@ -85,17 +85,17 @@ class MiraClassifier:
                         learnedCWeights[bestGuess] = learnedCWeights[bestGuess] - dataCopy
                         learnedCWeights[realLabel] = learnedCWeights[realLabel] + dataCopy
 
-            correct = 0 # find out how accurate our c was
-            classifications = self.classify(validationData) # guess based on the data
-            for l in range(len(classifications)):
-                correct = correct + (validationData[l] == classifications[l] and 1.0 or 0.0)
-            accuracyVal = correct / len(classifications)
+            # correct = 0 # find out how accurate our c was
+            # classifications = self.classify(validationData) # guess based on the data
+            # for l in range(len(classifications)):
+            #     correct = correct + (validationData[l] == classifications[l] and 1.0 or 0.0)
+            # accuracyVal = correct / len(classifications)
 
-            if accuracyVal > mostAccurateVal:
-                mostAccurateVal = accuracyVal
-                accurateWeights = learnedCWeights
+            # if accuracyVal > mostAccurateVal:
+            #     mostAccurateVal = accuracyVal
+            #     accurateWeights = learnedCWeights
 
-        self.weights = accurateWeights # store the weights learned using the best value of C at the end in self.weights
+        self.weights = learnedCWeights # store the weights learned using the best value of C at the end in self.weights
 
 
 
