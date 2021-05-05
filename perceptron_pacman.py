@@ -49,9 +49,9 @@ class PerceptronClassifierPacman(PerceptronClassifier):
         for iteration in range(self.max_iterations):
             print "Starting iteration ", iteration, "..."
             for data, trainLbl in zip(trainingData, trainingLabels):
-                for label in data[1]:
-                    for feature, value in data[0][label].items():
-                        if label == trainLbl:
-                            self.weights[feature] += value
+                for lbl in data[1]:
+                    for feature, val in data[0][lbl].items():
+                        if lbl == trainLbl:
+                            self.weights[feature] += val
                         else:
-                            self.weights[feature] -= value
+                            self.weights[feature] -= val
