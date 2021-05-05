@@ -60,8 +60,44 @@ class MiraClassifier:
         datum is a counter from features to values for those features
         representing a vector of values.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        mostAccurateVal = -99
+        accurateWeights = {}
+        for c in Cgrid: # for every c we have
+            learnedCWeights = self.weights.copy()
+            for i in range (self.max_iterations): # pass through the data self.max.iteration times during training
+                for j in range(len(trainingData)):
+                    highestValue = -99
+                    bestGuess = None
+                    data = trainingData[j]
+
+                    for legLabel in self.legalLabels: # make a guess
+                        predImage = data * learnedCWeights[legLabel]
+                        if predImage > highestValue:
+                            highestValue = predImage
+                            bestGuess = legLabel
+                    realLabel = trainingLabels[j]
+
+                    if realLabel != bestGuess: # if guess is wrong
+                        dataCopy = data.copy()
+                        tau = min(c, (((learnedCWeights[bestGuess] - learnedCWeights[realLabel]) * dataCopy + 1.0) / (2.0 * (dataCopy * dataCopy))))
+                        dataCopy.update((x, y * tau) for x, y in data.items())
+                        learnedCWeights[bestGuess] = learnedCWeights[bestGuess] - dataCopy
+                        learnedCWeights[realLabel] = learnedCWeights[realLabel] + dataCopy
+
+            correct = 0 # find out how accurate our c was
+            classifications = self.classify(validationData) # guess based on the data
+            for l in range(len(classifications)):
+                correct = correct + (validationData[l] == classifications[l] and 1.0 or 0.0)
+            accuracyVal = correct / len(classifications)
+
+            if accuracyVal > mostAccurateVal:
+                mostAccurateVal = accuracyVal
+                accurateWeights = learnedCWeights
+
+        self.weights = accurateWeights # store the weights learned using the best value of C at the end in self.weights
+
+
 
     def classify(self, data ):
         """
